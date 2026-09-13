@@ -8,7 +8,7 @@
 		"./app-router": "./src/generated/server.ts"
 	},
 	"scripts": {
-		"build": "bun build api/index.ts --target=node --outdir api --packages=external",
+		"build": "bun build api/_handler.ts --target=node --outdir api --packages=external && mv api/_handler.js api/index.js",
 		"check-types": "tsc --noEmit",
 		"dev": "concurrently -n api,trpc -c blue,magenta \"bun --watch src/main.ts\" \"bun run dev:trpc\"",
 		"dev:trpc": "nestjs-trpc watch -e src/app.module.ts -r \"**/*.router.ts\" -o src/generated",
