@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
   "functions": {
-    "api/_handler.ts": {
+    "api/handler.ts": {
       "includeFiles": "src/**"
     }
   }
-}          
+}  
