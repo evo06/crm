@@ -8575,6 +8575,12 @@ class DispatchHeartbeatService {
     this.trigger = trigger;
   }
   onApplicationBootstrap() {
+    if (process.env.VERCEL) {
+      this.logger.log({
+        message: "Running on Vercel — skipping the in-process agent heartbeat. Use a Vercel Cron Job against a dedicated endpoint instead."
+      });
+      return;
+    }
     if (!this.trigger.canReachAgent()) {
       this.logger.log({
         message: "No agent bridge secret, so queued work waits for the agent's own schedule."
