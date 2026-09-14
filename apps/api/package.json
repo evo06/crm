@@ -23,6 +23,12 @@
     "clean": "rm -rf .turbo dist node_modules src/generated"
   },
   "dependencies": {
+    "@better-auth/api-key": "1.6.25",
+    "@better-auth/sso": "1.6.25",
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "posthog-node": "^5.48.0",
+    "react": "^19.2.8",
     "@crm/auth": "workspace:*",
     "@crm/db": "workspace:*",
     "@crm/env": "workspace:*",
