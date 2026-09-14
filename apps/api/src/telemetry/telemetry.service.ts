@@ -38,6 +38,24 @@ export class TelemetryService implements OnModuleInit, OnApplicationShutdown {
 			message: "Anonymous usage telemetry is on. See docs/telemetry.md.",
 			crmVersion: install?.version,
 		});
+		
+		// The rollup fans out into dozens of concurrent queries (counts,
+		// groupBys, raw SQL) across most of the schema — fine for a
+		// long-lived server with a real connection pool, but on Vercel every
+		// cold start would kick this off again, and those queries can end up
+		// competing for the same handful of pooled Postgres connections as
+		// the actual request being served (e.g. sign-in), stalling it for
+		// minutes. Skip the automatic kickoff here; a Vercel Cron Job hitting
+		// a dedicated endpoint is the right way to run this on a schedule
+		// instead of firing it from request-handling code.
+		if (process.env.VERCEL) {
+			this.logger.log({
+				message:
+					"Running on Vercel — skipping the automatic telemetry rollup. Use a Vercel Cron Job against a dedicated endpoint instead.",
+			});
+			return;
+		}
+
 
 		void this.rollup.run().catch(() => {});
 
