@@ -8575,6 +8575,8 @@ class DispatchHeartbeatService {
     this.trigger = trigger;
   }
   onApplicationBootstrap() {
+    process.stdout.write(`DIAG: DispatchHeartbeat onApplicationBootstrap entered ${Date.now()}
+`);
     if (process.env.VERCEL) {
       this.logger.log({
         message: "Running on Vercel — skipping the in-process agent heartbeat. Use a Vercel Cron Job against a dedicated endpoint instead."
@@ -24579,6 +24581,8 @@ class TelemetryService {
       message: "Anonymous usage telemetry is on. See docs/telemetry.md.",
       crmVersion: install?.version
     });
+    process.stdout.write(`DIAG: telemetry onModuleInit reached VERCEL check, VERCEL=${JSON.stringify(process.env.VERCEL)} ${Date.now()}
+`);
     if (process.env.VERCEL) {
       this.logger.log({
         message: "Running on Vercel — skipping the automatic telemetry rollup. Use a Vercel Cron Job against a dedicated endpoint instead."
@@ -26990,40 +26994,25 @@ async function createApp() {
     };
     return swaggerDocument;
   }, { jsonDocumentUrl: "openapi.json" });
-  const appAny = app;
-  for (const name of [
-    "registerModules",
-    "registerRouter",
-    "callInitHook",
-    "registerRouterHooks",
-    "callBootstrapHook"
-  ]) {
-    const original = appAny[name]?.bind(app);
-    if (typeof original !== "function") {
-      process.stdout.write(`DIAG: ${name} is not a function on app instance
+  let diagTick = 0;
+  const diagHeartbeat = setInterval(() => {
+    diagTick += 1;
+    process.stdout.write(`DIAG: heartbeat #${diagTick} ${Date.now()}
 `);
-      continue;
-    }
-    appAny[name] = async (...args) => {
-      process.stdout.write(`DIAG: ${name} START ${Date.now()}
-`);
-      try {
-        const result = await original(...args);
-        process.stdout.write(`DIAG: ${name} END ${Date.now()}
-`);
-        return result;
-      } catch (error) {
-        process.stdout.write(`DIAG: ${name} THREW ${Date.now()} ${String(error)}
-`);
-        throw error;
-      }
-    };
-  }
+  }, 1000);
   process.stdout.write(`DIAG: about to call app.init() ${Date.now()}
 `);
-  await app.init();
-  process.stdout.write(`DIAG: app.init() resolved ${Date.now()}
+  try {
+    await app.init();
+    process.stdout.write(`DIAG: app.init() resolved ${Date.now()}
 `);
+  } catch (error) {
+    process.stdout.write(`DIAG: app.init() THREW ${Date.now()} ${String(error)}
+`);
+    throw error;
+  } finally {
+    clearInterval(diagHeartbeat);
+  }
   const { appRouter } = app.get(AppRouterHost);
   restBridge = createOpenApiExpressMiddleware({
     router: appRouter,
