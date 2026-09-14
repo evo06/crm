@@ -8575,8 +8575,9 @@ class DispatchHeartbeatService {
     this.trigger = trigger;
   }
   onApplicationBootstrap() {
-    process.stdout.write(`DIAG: DispatchHeartbeat onApplicationBootstrap entered ${Date.now()}
+    process.stdout.write(`DIAG: DispatchHeartbeat onApplicationBootstrap NOOP ${Date.now()}
 `);
+    return;
     if (process.env.VERCEL) {
       this.logger.log({
         message: "Running on Vercel — skipping the in-process agent heartbeat. Use a Vercel Cron Job against a dedicated endpoint instead."
@@ -24569,6 +24570,9 @@ class TelemetryService {
     this.rollup = rollup;
   }
   async onModuleInit() {
+    process.stdout.write(`DIAG: TelemetryService.onModuleInit NOOP ${Date.now()}
+`);
+    return;
     onTelemetryProblem((message) => this.logger.debug({ message }));
     if (telemetryDisabled()) {
       this.logger.log({
