@@ -24579,6 +24579,12 @@ class TelemetryService {
       message: "Anonymous usage telemetry is on. See docs/telemetry.md.",
       crmVersion: install?.version
     });
+    if (process.env.VERCEL) {
+      this.logger.log({
+        message: "Running on Vercel — skipping the automatic telemetry rollup. Use a Vercel Cron Job against a dedicated endpoint instead."
+      });
+      return;
+    }
     this.rollup.run().catch(() => {});
     this.timer = setInterval(() => {
       this.rollup.run().catch(() => {});
