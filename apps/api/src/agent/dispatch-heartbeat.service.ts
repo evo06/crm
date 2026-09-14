@@ -39,7 +39,6 @@ export class DispatchHeartbeatService
 		if (!this.trigger.canReachAgent()) {
 			this.logger.log({
 				message:
-					
 					"No agent bridge secret, so queued work waits for the agent's own schedule.",
 			});
 			return;
