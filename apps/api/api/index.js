@@ -26990,7 +26990,40 @@ async function createApp() {
     };
     return swaggerDocument;
   }, { jsonDocumentUrl: "openapi.json" });
+  const appAny = app;
+  for (const name of [
+    "registerModules",
+    "registerRouter",
+    "callInitHook",
+    "registerRouterHooks",
+    "callBootstrapHook"
+  ]) {
+    const original = appAny[name]?.bind(app);
+    if (typeof original !== "function") {
+      process.stdout.write(`DIAG: ${name} is not a function on app instance
+`);
+      continue;
+    }
+    appAny[name] = async (...args) => {
+      process.stdout.write(`DIAG: ${name} START ${Date.now()}
+`);
+      try {
+        const result = await original(...args);
+        process.stdout.write(`DIAG: ${name} END ${Date.now()}
+`);
+        return result;
+      } catch (error) {
+        process.stdout.write(`DIAG: ${name} THREW ${Date.now()} ${String(error)}
+`);
+        throw error;
+      }
+    };
+  }
+  process.stdout.write(`DIAG: about to call app.init() ${Date.now()}
+`);
   await app.init();
+  process.stdout.write(`DIAG: app.init() resolved ${Date.now()}
+`);
   const { appRouter } = app.get(AppRouterHost);
   restBridge = createOpenApiExpressMiddleware({
     router: appRouter,
