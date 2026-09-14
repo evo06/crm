@@ -8575,9 +8575,6 @@ class DispatchHeartbeatService {
     this.trigger = trigger;
   }
   onApplicationBootstrap() {
-    process.stdout.write(`DIAG: DispatchHeartbeat onApplicationBootstrap NOOP ${Date.now()}
-`);
-    return;
     if (process.env.VERCEL) {
       this.logger.log({
         message: "Running on Vercel — skipping the in-process agent heartbeat. Use a Vercel Cron Job against a dedicated endpoint instead."
@@ -24570,9 +24567,6 @@ class TelemetryService {
     this.rollup = rollup;
   }
   async onModuleInit() {
-    process.stdout.write(`DIAG: TelemetryService.onModuleInit NOOP ${Date.now()}
-`);
-    return;
     onTelemetryProblem((message) => this.logger.debug({ message }));
     if (telemetryDisabled()) {
       this.logger.log({
@@ -24585,8 +24579,6 @@ class TelemetryService {
       message: "Anonymous usage telemetry is on. See docs/telemetry.md.",
       crmVersion: install?.version
     });
-    process.stdout.write(`DIAG: telemetry onModuleInit reached VERCEL check, VERCEL=${JSON.stringify(process.env.VERCEL)} ${Date.now()}
-`);
     if (process.env.VERCEL) {
       this.logger.log({
         message: "Running on Vercel — skipping the automatic telemetry rollup. Use a Vercel Cron Job against a dedicated endpoint instead."
@@ -26998,25 +26990,7 @@ async function createApp() {
     };
     return swaggerDocument;
   }, { jsonDocumentUrl: "openapi.json" });
-  let diagTick = 0;
-  const diagHeartbeat = setInterval(() => {
-    diagTick += 1;
-    process.stdout.write(`DIAG: heartbeat #${diagTick} ${Date.now()}
-`);
-  }, 1000);
-  process.stdout.write(`DIAG: about to call app.init() ${Date.now()}
-`);
-  try {
-    await app.init();
-    process.stdout.write(`DIAG: app.init() resolved ${Date.now()}
-`);
-  } catch (error) {
-    process.stdout.write(`DIAG: app.init() THREW ${Date.now()} ${String(error)}
-`);
-    throw error;
-  } finally {
-    clearInterval(diagHeartbeat);
-  }
+  await app.init();
   const { appRouter } = app.get(AppRouterHost);
   restBridge = createOpenApiExpressMiddleware({
     router: appRouter,
